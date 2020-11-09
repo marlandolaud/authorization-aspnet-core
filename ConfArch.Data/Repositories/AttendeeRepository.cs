@@ -21,10 +21,5 @@ namespace ConfArch.Data.Repositories
             dbContext.Attendees.Add(entity);
             return dbContext.SaveChangesAsync();
         }
-
-        public Task<int> GetAttendeesTotal(int conferenceId)
-        {
-            return dbContext.Attendees.CountAsync(a => a.ConferenceId == conferenceId);
-        }
     }
 }

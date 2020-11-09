@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ConfArch.Data;
 using ConfArch.Data.Entities;
 using ConfArch.Data.Models;
 using Microsoft.EntityFrameworkCore;
