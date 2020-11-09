@@ -1,9 +1,12 @@
 using System;
 using System.Net.Http.Headers;
+using System.Security.Claims;
+using ConfArch.Web.Authorization;
 using ConfArch.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -61,6 +64,8 @@ namespace ConfArch.Web
                     options.ResponseMode = "form_post";
 
                     options.UsePkce = true;
+
+                    options.TokenValidationParameters.RoleClaimType = "Role";
                 });
 
             services.AddHttpContextAccessor();
@@ -70,10 +75,28 @@ namespace ConfArch.Web
                 var accessor = services.GetRequiredService<IHttpContextAccessor>();
                 var accessToken = await accessor.HttpContext
                     .GetTokenAsync("access_token");
-                client.DefaultRequestHeaders.Authorization = 
+                client.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("bearer", accessToken);
                 client.BaseAddress = new Uri("https://localhost:5002");
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("IsSpeaker", policy =>
+                    policy.RequireRole("Speaker"));
+                options.AddPolicy("CanAddConference", policy =>
+                    policy.RequireClaim("Permission", "AddConference"));
+                options.AddPolicy("YearsOfExperience",
+                    policy => policy.AddRequirements(
+                        new YearsOfExperienceRequirement(30)
+                        )
+                    );
+                options.AddPolicy("CanEditProposal",
+                    policy => policy.AddRequirements(new ProposalRequirement()));
+            });
+
+            services.AddSingleton<IAuthorizationHandler,
+                YearsOfExperienceAuthorizationHandler>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -87,7 +110,6 @@ namespace ConfArch.Web
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 

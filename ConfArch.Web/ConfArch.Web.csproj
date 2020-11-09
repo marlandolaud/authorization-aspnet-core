@@ -18,4 +18,8 @@
     <ProjectReference Include="..\ConfArch.Data\ConfArch.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Account\" />
+  </ItemGroup>
+
 </Project>
